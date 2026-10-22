@@ -1,0 +1,16 @@
+# =====================================================================
+# PROJETO ARRANQUE: SENTINELA PARANOÁ
+# CONFIGURAÇÃO: ARQUIVOS OMITIDOS DO GIT (.gitignore)
+# =====================================================================
+
+# Ocultar pastas de cache temporárias do Python
+__pycache__/
+*.pyc
+
+# Ocultar o banco de dados local para não expor dados de teste na nuvem
+*.db
+*.sqlite3
+
+# Ocultar ambientes virtuais locais
+venv/
+.venv/
