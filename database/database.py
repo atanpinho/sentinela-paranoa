@@ -41,3 +41,4 @@ def inicializar_banco():
 # Executa a função caso o arquivo seja rodado diretamente no terminal
 if __name__ == "__main__":
     inicializar_banco()
+    
