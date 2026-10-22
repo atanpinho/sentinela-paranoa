@@ -1,45 +1,44 @@
-# =====================================================================
-# PROJETO ARRANQUE: SENTINELA PARANOÁ
-# COMPONENTE: CONEXÃO E ROTAS DA API (main.py)
-# =====================================================================
-
 import sqlite3
+from datetime import datetime
 from fastapi import FastAPI
+from pydantic import BaseModel
 
-# 1. Instanciando o cérebro da nossa aplicação web
 app = FastAPI(
     title="ARRANQUE: Sentinela Paranoá API",
     description="Interface de comunicação para monitoramento ecológico dos córregos de Brasília."
 )
 
+class OcorrenciaEsquema(BaseModel):
+    categoria: str
+    latitude: float
+    longitude: float
+    descricao: str
+
 @app.get("/")
 def ler_raiz():
-    """
-    Rota inicial de boas-vidas para testar se o servidor está online.
-    """
     return {"status": "online", "projeto": "Sentinela Paranoá"}
-
 
 @app.get("/ocorrencias")
 def listar_ocorrencias():
-    """
-    Rota anatômica encarregada de buscar os relatos de poluição
-    guardados no banco de dados e entregá-los formatados para a internet.
-    """
-    # Estabelecendo conexão para leitura com o arquivo do banco
     conexao = sqlite3.connect("sentinela_paranoa.db")
-    
-    # Ativando o recurso que transforma as linhas brutas em dicionários legíveis
     conexao.row_factory = sqlite3.Row
     cursor = conexao.cursor()
-    
-    # Buscando todos os registros salvos na tabela ocorrencias
     cursor.execute("SELECT * FROM ocorrencias;")
     linhas = cursor.fetchall()
-    
-    # Fechando a conexão para liberar o arquivo do banco
     conexao.close()
-    
-    # Transformando o resultado em um formato padrão de mercado (JSON)
     resultado = [dict(linha) for linha in linhas]
     return resultado
+
+@app.post("/ocorrencias")
+def criar_ocorrencia(dados: OcorrenciaEsquema):
+    conexao = sqlite3.connect("sentinela_paranoa.db")
+    cursor = conexao.cursor()
+    agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    comando_sql = """
+    INSERT INTO ocorrencias (categoria, latitude, longitude, descricao, data_criacao)
+    VALUES (?, ?, ?, ?, ?);
+    """
+    cursor.execute(comando_sql, (dados.categoria, dados.latitude, dados.longitude, dados.descricao, agora))
+    conexao.commit()
+    conexao.close()
+    return {"mensagem": "Sucesso: Relato gravado com segurança no Sentinela!"}
