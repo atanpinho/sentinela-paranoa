@@ -27,8 +27,9 @@
             {% for alerta in alertas %}
             <div class="marcador-alerta" style="top: {{ alerta.posicao_top }}%; left: {{ alerta.posicao_left }}%;">
                 ⚠️ {{ alerta.tipo_crime }}<br>
-                <span>📍 {{ alerta.localizacao }}</span>
+                <span>{{ alerta.localizacao }}</span>
             </div>
+
             {% endfor %}
         </div>
     </div>
