@@ -1,16 +1,10 @@
-# =====================================================================
-# PROJETO ARRANQUE: SENTINELA PARANOÁ
-# CONFIGURAÇÃO: ARQUIVOS OMITIDOS DO GIT (.gitignore)
-# =====================================================================
+# Ignorar o arquivo físico de banco de dados SQLite local
+sentinela_paranoa.db
 
-# Ocultar pastas de cache temporárias do Python
+# Ignorar todas as fotos e evidências enviadas nos testes de bancada
+static/uploads/
+
+# Ignorar pastas ocultas de cache do Python
 __pycache__/
-*.pyc
-
-# Ocultar o banco de dados local para não expor dados de teste na nuvem
-*.db
-*.sqlite3
-
-# Ocultar ambientes virtuais locais
-venv/
-.venv/
+.pytest_cache/
+.vscode/
