@@ -4,105 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARRANQUE - Sentinela Paranoá</title>
+    
+    <!-- Folha de estilos do Leaflet para renderizar as camadas -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    
     <style>
-        body {
+        html, body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            height: 100%;
+            width: 100%;
             background-color: #222;
-            color: white;
-            text-align: center;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
         }
         .header-app {
             background-color: #0b3c5d;
-            padding: 15px;
+            padding: 12px;
             font-size: 20px;
             font-weight: bold;
+            color: white;
+            text-align: center;
+            position: relative;
+            z-index: 1000;
+            box-shadow: 0px 2px 8px rgba(0,0,0,0.5);
         }
-        /* Painel de Controle Superior Baseado na sua Bancada Real */
-        .painel-controle {
+        #map {
+            width: 100%;
+            height: calc(100vh - 65px);
             background-color: #1a1a1a;
-            margin: 15px auto;
-            padding: 15px;
-            width: 95%;
-            max-width: 1200px;
-            border-radius: 6px;
-            border: 1px solid #444;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: space-between;
-            align-items: center;
         }
-        .grupo-input {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-            flex: 1;
-            min-width: 180px;
-        }
-        .grupo-input label {
-            font-size: 12px;
-            margin-bottom: 5px;
-            color: #aaa;
-            font-weight: bold;
-        }
-        .grupo-input select, .grupo-input input {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #555;
-            background-color: #333;
-            color: white;
-            font-size: 13px;
-        }
-        /* Estilização dos Botões de Ação do Topo */
+        /* Botão do GPS flutuando sobre a cartografia */
         .btn-gps {
-            background-color: #31b0d5;
+            position: absolute;
+            top: 85px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #0c5a8f;
             color: white;
-            border: none;
-            padding: 8px 12px;
-            font-weight: bold;
+            border: 2px solid white;
+            padding: 10px 16px;
             border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
-            font-size: 13px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.4);
+            transition: background-color 0.2s;
         }
         .btn-gps:hover {
-            background-color: #269abc;
-        }
-        .btn-gravar {
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        .btn-gravar:hover {
-            background-color: #c9302c;
-        }
-        .container-mapa {
-            position: relative;
-            display: inline-block;
-            margin: 10px auto 20px auto;
-            border: 3px solid #fff;
-        }
-        .mapa-imagem {
-            display: block;
-            max-width: 100%;
-            height: auto;
-        }
-        .marcador-alerta {
-            position: absolute;
-            background-color: #d9534f;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            box-shadow: 0px 2px 5px rgba(0,0,0,0.5);
-            transform: translate(-50%, -50%);
+            background-color: #1374b5;
         }
     </style>
 </head>
@@ -110,83 +60,126 @@
 
     <div class="header-app">
         ARRANQUE: Sentinela Paranoá
-        <div style="font-size: 12px; font-weight: normal; margin-top: 5px;">Monitoramento Ecológico Dinâmico</div>
+        <div style="font-size: 12px; font-weight: normal; margin-top: 4px;">Monitoramento Ecológico Dinâmico</div>
     </div>
 
-    <!-- O Painel de Controle de Campo resgatado e protegido -->
-    <div class="painel-controle">
-        <div class="grupo-input">
-            <label>Contaminação:</label>
-            <select id="select-contaminacao">
-                <option value="Desmatamento Irregular">Desmatamento Irregular</option>
-                <option value="Esgoto Clandestino">Esgoto Clandestino</option>
-                <option value="Descarte de Lixo">Descarte de Lixo</option>
-            </select>
-        </div>
+    <!-- Elemento do Botão Interativo do GPS -->
+    <button class="btn-gps" id="btnGps">🎯 Ativar Meu GPS</button>
 
-        <div class="grupo-input">
-            <label>Ponto de Referência / Córrego:</label>
-            <input type="text" id="input-referencia" placeholder="GPS Ativo de Campo" />
-        </div>
+    <!-- Contêiner do Mapa -->
+    <div id="map"></div>
 
-        <div class="grupo-input">
-            <label>Anexar Evidência (Foto):</label>
-            <input type="file" id="input-foto" style="background-color: #1a1a1a; border: none; padding: 5px 0;" />
-        </div>
-
-        <!-- Adicionado o ID para o JavaScript conseguir escutar o clique deste botão azul -->
-        <button type="button" id="btn-ativar-gps" class="btn-gps">🌐 Ativar GPS Celular</button>
-        <button type="button" class="btn-gravar">Gravar Denúncia 📍</button>
-    </div>
-
-    <div class="container-mapa">
-        <img src="/static/mapa-1.png" class="mapa-imagem" alt="Mapa de Monitoramento">
-
-        {% if alerts %}
-            {% for alerta in alerts %}
-                <div class="marcador-alerta" style="top: {{ alerta.posicao_top }}%; left: {{ alerta.posicao_left }}%;">
-                    {{ alerta.categoria }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-
+    <!-- Biblioteca JavaScript do Leaflet -->
+    <script src="https://unpkg.com"></script>
     <script>
-        // Configuração do botão de ativação do hardware de GPS
-        document.getElementById('btn-ativar-gps').addEventListener('click', function() {
-            // Verifica se o navegador do celular ou PC suporta a ferramenta de geolocalização
-            if (navigator.geolocation) {
-                // Altera o texto temporariamente para dar um feedback humanizado ao usuário
-                this.innerHTML = "🌐 Localizando...";
-                this.style.backgroundColor = "#e67e22"; // Muda para laranja enquanto processa
+        // 1. Inicializa a mesa virtual do mapa em formato plano cartesiano simples
+        const map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -1,
+            maxZoom: 3
+        });
 
-                navigator.geolocation.getCurrentPosition(
-                    function(posicao) {
-                        // Captura os dados de latitude e longitude reais enviados pelo satélite do dispositivo
-                        const lat real = posicao.coords.latitude;
-                        const lng real = posicao.coords.longitude;
-                        
-                        // Injeta os dados capturados de forma textual dentro do campo Ponto de Referência
-                        document.getElementById('input-referencia').value = `Lat: ${lat_real.toFixed(4)} | Lng: ${lng_real.toFixed(4)}`;
-                        
-                        // Restaura o visual original do botão azul sinalizando o sucesso
-                        const botao = document.getElementById('btn-ativar-gps');
-                        botao.innerHTML = "🌐 GPS Ativo!";
-                        botao.style.backgroundColor = "#5cb85c"; // Verde de sucesso
-                    },
-                    function(erro) {
-                        // Trata os erros clássicos de permissão de privacidade
-                        alert("Aviso de Campo: Não foi possível acessar o GPS. Verifique as permissões de localização do seu navegador.");
-                        const botao = document.getElementById('btn-ativar-gps');
-                        botao.innerHTML = "🌐 Ativar GPS Celular";
-                        botao.style.backgroundColor = "#31b0d5";
-                    }
-                );
-            } else {
-                alert("Erro de Sistema: Este navegador não possui suporte para capturar o GPS.");
+        // 2. Define o tamanho da grade virtual (proporção 1000x1000 baseada na sua bancada)
+        const limitesDoMapa = [[0, 0], [1000, 1000]];
+
+        // 3. Carrega o arquivo físico real que você exportou do Illustrator para a pasta static
+        const overlayMapa = L.imageOverlay('/static/mapa-1.png', limitesDoMapa).addTo(map);
+        map.fitBounds(limitesDoMapa);
+
+        // =======================================================================
+        // MATRIZ DE CALIBRAÇÃO GEOGRÁFICA DO DISTRITO FEDERAL
+        // =======================================================================
+        // Ajusta as bordas invisíveis de latitude e longitude reais que o mapa cobre
+        const CORRECAO_GEO = {
+            topLat: -15.6500,      // Limite do topo da folha (Pixel Y = 1000)
+            bottomLat: -15.8500,   // Limite da base da folha (Pixel Y = 0)
+            leftLng: -48.0000,     // Limite esquerdo da folha (Pixel X = 0)
+            rightLng: -47.6500     // Limite direito da folha (Pixel X = 1000)
+        };
+
+        function converterCoordenadasParaPixels(lat, lng) {
+            // Regra de três proporcional para descobrir o ponto Y na imagem
+            let deltaLat = CORRECAO_GEO.topLat - CORRECAO_GEO.bottomLat;
+            let pixelY = ((lat - CORRECAO_GEO.bottomLat) / deltaLat) * 1000;
+
+            // Regra de três proporcional para descobrir o ponto X na imagem
+            let deltaLng = CORRECAO_GEO.rightLng - CORRECAO_GEO.leftLng;
+            let pixelX = ((lng - CORRECAO_GEO.leftLng) / deltaLng) * 1000;
+
+            return [pixelY, pixelX];
+        }
+
+        // =======================================================================
+        // RECEBIMENTO E DESIGN DOS ALFINETES DO BANCO DE DADOS (Jinja2)
+        // =======================================================================
+        const alertasDoBanco = {{ alerts | tojson if alerts is defined else "[]" }};
+
+        // Fallback visual de segurança para caso a tabela de ocorrências esteja limpa
+        const dadosParaExibir = alertasDoBanco.length > 0 ? alertasDoBanco : [
+            {"categoria": "Esgoto Clandestino", "descricao": "Ponto de vazamento na bacia.", "posicao_top": 500, "posicao_left": 500},
+            {"categoria": "Descarte de Lixo", "descricao": "Acúmulo de lixo nas margens detectado.", "posicao_top": 620, "posicao_left": 420}
+        ];
+
+        // Roda o laço e plota os marcadores vermelhos baseados nos eixos salvos no banco
+        dadosParaExibir.forEach(alerta => {
+            L.marker([alerta.posicao_top, alerta.posicao_left]).addTo(map)
+                .bindPopup(`<b>${alerta.categoria}</b><br>${alerta.descricao || 'Alerta comunitário active.'}`);
+        });
+
+        // =======================================================================
+        // EVENTO E ACIONAMENTO DO SENSOR DE GPS DO AGENTE COMUNITÁRIO
+        // =======================================================================
+        const botaoGps = document.getElementById('btnGps');
+        let pontoAzulAgente = null;
+
+        botaoGps.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                alert('Seu navegador não possui suporte para leitura de GPS.');
+                return;
             }
+
+            botaoGps.innerText = "⏳ Buscando Satélites...";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const latReal = position.coords.latitude;
+                    const lngReal = position.coords.longitude;
+
+                    // Converte a localização em graus do satélite para a escala 1000x1000 da imagem
+                    const [pontoY, pontoX] = converterCoordenadasParaPixels(latReal, lngReal);
+
+                    // Verifica se as coordenadas batem dentro do quadrado do mapa do DF
+                    if (pontoY >= 0 && pontoY <= 1000 && pontoX >= 0 && pontoX <= 1000) {
+                        
+                        if (pontoAzulAgente) {
+                            map.removeLayer(pontoAzulAgente);
+                        }
+
+                        // Desenha o círculo azul identificador de posição do Agente na prancheta
+                        pontoAzulAgente = L.circleMarker([pontoY, pontoX], {
+                            radius: 10,
+                            fillColor: "#007bff",
+                            color: "#ffffff",
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 0.8        
+                        }).addTo(map).bindPopup("<b>Você está aqui</b><br>Posição sincronizada no mapa.").openPopup();
+
+                        map.setView([pontoY, pontoX], 1);
+                        botaoGps.innerText = "🎯 GPS Ativo";
+                    } else {
+                        alert(`GPS Ativo, mas sua posição atual está fora da bacia configurada.\nPixels calculados: X: ${pontoX.toFixed(0)}, Y: ${pontoY.toFixed(0)}`);
+                        botaoGps.innerText = "🎯 Ativar Meu GPS";
+                    }
+                },
+                (error) => {
+                    console.error(error);
+                    alert('Não foi possível acessar seus dados de localização. Certifique-se de que a localização está ligada.');
+                    botaoGps.innerText = "🎯 Ativar Meu GPS";
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
         });
     </script>
-
 </body>
 </html>
