@@ -7,17 +7,20 @@ from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 
-# Configuração fixa de caminhos físicos da prancheta
+# Configuração automática dos caminhos das pastas na sua máquina
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+
+# Monta a rota para que o navegador ache os arquivos dentro da pasta static
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 def buscar_alertas_reais():
-    """Busca as ocorrências gravadas no arquivo físico de banco"""
+    # Conecta diretamente no banco de dados real da sua raiz
     conexao = sqlite3.connect("sentinela_paranoa.db")
     conexao.row_factory = sqlite3.Row
     cursor = conexao.cursor()
     
+    # Garante a existência da tabela com a estrutura correta de colunas
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS ocorrencias (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,22 +31,21 @@ def buscar_alertas_reais():
         data_registro DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
-    conexao.commit()
     
+    # Busca todas as ocorrências salvas pelos testes ou agentes
     cursor.execute("SELECT categoria, posicao_top, posicao_left, descricao FROM ocorrencias")
     linhas = cursor.fetchall()
     conexao.close()
     
+    # Devolve os dados formatados em dicionário para o Jinja2 processar
     return [dict(linha) for linha in linhas]
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    """Rota raiz que serve a prancheta visual com os marcadores"""
     try:
         alertas = buscar_alertas_reais()
     except Exception as e:
-        print(f"Aviso de Bancada: {e}")
+        print(f"Aviso de Bancada (Erro ao ler banco): {e}")
         alertas = []
         
-    # CORREÇÃO DEFINITIVA: Passando o request como primeiro argumento para sanar o erro de tupla
-    return templates.TemplateResponse(request, "index.html", {"alerts": alertas})
+    return templates.TemplateResponse("index.html", {"request": request, "alerts": alertas})
