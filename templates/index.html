@@ -1,38 +1,192 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARRANQUE - Sentinela Paranoá</title>
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4; overflow-x: hidden; }
-        #painel-mapa { display: flex; flex-direction: column; align-items: center; width: 100%; }
-        #topo { background-color: #0b5147; color: white; text-align: center; padding: 15px 20px; width: 100%; box-sizing: border-box; z-index: 10; }
-        #topo h2 { margin: 0 0 5px 0; font-size: 24px; }
-        #topo p { margin: 0; font-size: 14px; opacity: 0.9; }
-        #area-conteudo { position: relative; width: 100vw; margin: 0; padding: 0; }
-        .mapa-local { display: block; width: 100%; height: auto; }
-        .marcador-alerta { position: absolute; background-color: #d32f2f; color: white; padding: 8px 14px; border-radius: 4px; font-weight: bold; font-size: 14px; box-shadow: 0px 3px 6px rgba(0,0,0,0.3); white-space: nowrap; transform: translate(-50%, -50%); font-family: sans-serif; }
-        .marcador-alerta span { font-size: 12px; font-weight: normal; color: #ffcdd2; display: inline-block; margin-top: 2px; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
+            text-align: center;
+        }
+        .header-app {
+            background-color: #0b3c5d;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        /* Painel de Controle Superior Baseado na sua Bancada Real */
+        .painel-controle {
+            background-color: #1a1a1a;
+            margin: 15px auto;
+            padding: 15px;
+            width: 95%;
+            max-width: 1200px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .grupo-input {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            flex: 1;
+            min-width: 180px;
+        }
+        .grupo-input label {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-weight: bold;
+        }
+        .grupo-input select, .grupo-input input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+            font-size: 13px;
+        }
+        /* Estilização dos Botões de Ação do Topo */
+        .btn-gps {
+            background-color: #31b0d5;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-gps:hover {
+            background-color: #269abc;
+        }
+        .btn-gravar {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-gravar:hover {
+            background-color: #c9302c;
+        }
+        .container-mapa {
+            position: relative;
+            display: inline-block;
+            margin: 10px auto 20px auto;
+            border: 3px solid #fff;
+        }
+        .mapa-imagem {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        .marcador-alerta {
+            position: absolute;
+            background-color: #d9534f;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%);
+        }
     </style>
 </head>
 <body>
-    <div id="painel-mapa">
-        <div id="topo">
-            <h2>🚀 ARRANQUE: Sentinela Paranoá</h2>
-            <p>Monitoramento Ecológico da Bacia Hidrográfica do Lago Paranoá</p>
-        </div>
-        <div id="area-conteudo">
-            <img class="mapa-local" src="/static/mapa_oficial_gdf.png" alt="Mapa Oficial GDF Local">
-            
-            {% for alerta in alertas %}
-            <div class="marcador-alerta" style="top: {{ alerta.posicao_top }}%; left: {{ alerta.posicao_left }}%;">
-                ⚠️ {{ alerta.tipo_crime }}<br>
-                <span>{{ alerta.localizacao }}</span>
-            </div>
-            {% endfor %}
-            
-        </div>
+
+    <div class="header-app">
+        ARRANQUE: Sentinela Paranoá
+        <div style="font-size: 12px; font-weight: normal; margin-top: 5px;">Monitoramento Ecológico Dinâmico</div>
     </div>
+
+    <!-- O Painel de Controle de Campo resgatado e protegido -->
+    <div class="painel-controle">
+        <div class="grupo-input">
+            <label>Contaminação:</label>
+            <select id="select-contaminacao">
+                <option value="Desmatamento Irregular">Desmatamento Irregular</option>
+                <option value="Esgoto Clandestino">Esgoto Clandestino</option>
+                <option value="Descarte de Lixo">Descarte de Lixo</option>
+            </select>
+        </div>
+
+        <div class="grupo-input">
+            <label>Ponto de Referência / Córrego:</label>
+            <input type="text" id="input-referencia" placeholder="GPS Ativo de Campo" />
+        </div>
+
+        <div class="grupo-input">
+            <label>Anexar Evidência (Foto):</label>
+            <input type="file" id="input-foto" style="background-color: #1a1a1a; border: none; padding: 5px 0;" />
+        </div>
+
+        <!-- Adicionado o ID para o JavaScript conseguir escutar o clique deste botão azul -->
+        <button type="button" id="btn-ativar-gps" class="btn-gps">🌐 Ativar GPS Celular</button>
+        <button type="button" class="btn-gravar">Gravar Denúncia 📍</button>
+    </div>
+
+    <div class="container-mapa">
+        <img src="/static/mapa-1.png" class="mapa-imagem" alt="Mapa de Monitoramento">
+
+        {% if alerts %}
+            {% for alerta in alerts %}
+                <div class="marcador-alerta" style="top: {{ alerta.posicao_top }}%; left: {{ alerta.posicao_left }}%;">
+                    {{ alerta.categoria }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        // Configuração do botão de ativação do hardware de GPS
+        document.getElementById('btn-ativar-gps').addEventListener('click', function() {
+            // Verifica se o navegador do celular ou PC suporta a ferramenta de geolocalização
+            if (navigator.geolocation) {
+                // Altera o texto temporariamente para dar um feedback humanizado ao usuário
+                this.innerHTML = "🌐 Localizando...";
+                this.style.backgroundColor = "#e67e22"; // Muda para laranja enquanto processa
+
+                navigator.geolocation.getCurrentPosition(
+                    function(posicao) {
+                        // Captura os dados de latitude e longitude reais enviados pelo satélite do dispositivo
+                        const lat real = posicao.coords.latitude;
+                        const lng real = posicao.coords.longitude;
+                        
+                        // Injeta os dados capturados de forma textual dentro do campo Ponto de Referência
+                        document.getElementById('input-referencia').value = `Lat: ${lat_real.toFixed(4)} | Lng: ${lng_real.toFixed(4)}`;
+                        
+                        // Restaura o visual original do botão azul sinalizando o sucesso
+                        const botao = document.getElementById('btn-ativar-gps');
+                        botao.innerHTML = "🌐 GPS Ativo!";
+                        botao.style.backgroundColor = "#5cb85c"; // Verde de sucesso
+                    },
+                    function(erro) {
+                        // Trata os erros clássicos de permissão de privacidade
+                        alert("Aviso de Campo: Não foi possível acessar o GPS. Verifique as permissões de localização do seu navegador.");
+                        const botao = document.getElementById('btn-ativar-gps');
+                        botao.innerHTML = "🌐 Ativar GPS Celular";
+                        botao.style.backgroundColor = "#31b0d5";
+                    }
+                );
+            } else {
+                alert("Erro de Sistema: Este navegador não possui suporte para capturar o GPS.");
+            }
+        });
+    </script>
+
 </body>
 </html>
