@@ -1,0 +1,278 @@
+
+/* ========================================
+   SENTINELA PARANOÁ
+   Identidade visual contemporânea
+   Tema grafite e verde
+   ======================================== */
+
+:root {
+    --verde: #52B788;
+    --verde-escuro: #8BD8AD;
+    --verde-claro: #253C30;
+    --fundo: #202522;
+    --branco: #2B322D;
+    --texto: #E8EFEA;
+    --texto-suave: #B5C1B9;
+    --borda: #414B44;
+    --sombra: 0 8px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* Configuração geral */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 28px 60px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    line-height: 1.7;
+    font-size: 16px;
+}
+
+/* Título principal */
+
+h1 {
+    margin: 0 0 12px;
+    color: var(--verde-escuro);
+    font-size: clamp(32px, 5vw, 48px);
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+    font-weight: 750;
+}
+
+/* Títulos das seções */
+
+h2 {
+    margin: 42px 0 18px;
+    color: var(--verde-escuro);
+    font-size: 25px;
+    line-height: 1.3;
+    letter-spacing: -0.5px;
+}
+
+h3 {
+    margin-top: 0;
+    color: var(--verde-escuro);
+    font-size: 19px;
+}
+
+/* Textos */
+
+p {
+    color: var(--texto-suave);
+}
+
+body > p {
+    max-width: 700px;
+    margin: 0 0 20px;
+}
+
+/* Área reservada para o mapa */
+
+#mapa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    padding: 30px;
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(82, 183, 136, 0.08),
+            transparent 45%
+        ),
+        linear-gradient(135deg, #252D28, #202522);
+    color: var(--texto-suave);
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Formulário */
+
+form {
+    max-width: 760px;
+    padding: 32px;
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    box-shadow: var(--sombra);
+}
+
+/* Rótulos dos campos */
+
+label {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--texto);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+/* Campos de preenchimento */
+
+input,
+select,
+textarea {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 13px 15px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    background: #222925;
+    color: var(--texto);
+    font-family: inherit;
+    font-size: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #9BAAA0;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--verde);
+    box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.16);
+}
+
+select option {
+    background: #2B322D;
+    color: #E8EFEA;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Espaçamento dos campos antigos com quebras de linha */
+
+form br {
+    display: none;
+}
+
+form label + br {
+    display: none;
+}
+
+/* Botão principal */
+
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 22px;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 10px;
+    background: var(--verde);
+    color: #17251D;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.16);
+    transition: background 0.2s, transform 0.2s;
+}
+
+button:hover {
+    background: var(--verde-escuro);
+    transform: translateY(-1px);
+}
+
+button:focus-visible {
+    outline: 3px solid var(--verde-escuro);
+    outline-offset: 3px;
+}
+
+/* Mensagem de confirmação */
+
+p[role="status"] {
+    padding: 15px 18px;
+    border: 1px solid #426B52;
+    border-radius: 12px;
+    background: var(--verde-claro);
+    color: var(--verde-escuro);
+    font-weight: 650;
+}
+
+/* Separadores */
+
+hr {
+    height: 1px;
+    margin: 42px 0;
+    border: 0;
+    background: var(--borda);
+}
+
+/* Cartões de ocorrências */
+
+article {
+    max-width: 850px;
+    margin-bottom: 18px;
+    padding: 24px;
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    background: var(--branco);
+    box-shadow: var(--sombra);
+    overflow-wrap: anywhere;
+}
+
+article p {
+    margin: 10px 0;
+}
+
+article strong {
+    color: var(--texto);
+}
+
+article hr {
+    margin: 20px 0 0;
+}
+
+/* Adaptação para telas pequenas */
+
+@media (max-width: 600px) {
+    body {
+        padding: 24px 16px 40px;
+        font-size: 15px;
+    }
+
+    h1 {
+        letter-spacing: -0.8px;
+    }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 22px;
+    }
+
+    form {
+        padding: 20px;
+        border-radius: 14px;
+    }
+
+    #mapa {
+        min-height: 190px;
+        padding: 20px;
+    }
+
+    article {
+        padding: 18px;
+    }
+
+    button {
+        width: 100%;
+    }
+}
