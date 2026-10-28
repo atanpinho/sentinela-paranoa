@@ -106,7 +106,12 @@
 
     <p>Relate um possível problema ambiental para avaliação.</p>
 
-    <form action="/ocorrencias" method="post" id="formulario-ocorrencia">
+    <form
+        action="/ocorrencias"
+        method="post"
+        id="formulario-ocorrencia"
+        enctype="multipart/form-data"
+>
 
         <input type="hidden" id="latitude-formulario" name="latitude">
         <input type="hidden" id="longitude-formulario" name="longitude">
@@ -138,6 +143,7 @@
 
         <br><br>
 
+       
         <label for="local">Local da ocorrência:</label>
         <br>
 
@@ -146,6 +152,20 @@
             id="local"
             name="local"
             placeholder="Ex.: próximo a uma ponte ou rua"
+            required
+        >
+
+        <br><br>
+
+        <label for="foto">Fotografia da ocorrência:</label>
+        <br>
+
+        <input
+            type="file"
+            id="foto"
+            name="foto"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
             required
         >
 
@@ -176,9 +196,19 @@
                         Outro problema ambiental
                     {% endif %}
                 </p>
-
+                
                 <p><strong>Descrição:</strong> {{ ocorrencia.descricao }}</p>
                 <p><strong>Local:</strong> {{ ocorrencia.local }}</p>
+
+                {% if ocorrencia.foto %}
+                    <p><strong>Fotografia da ocorrência:</strong></p>
+                    <img
+                        src="{{ ocorrencia.foto }}"
+                        alt="Fotografia da ocorrência nº {{ ocorrencia.id }}"
+                        style="max-width: 100%; width: 500px; height: auto; border-radius: 12px;"
+                        loading="lazy"
+                    >
+                {% endif %}
 
                 {% if ocorrencia.latitude is not none and ocorrencia.longitude is not none %}
                     <p><strong>Latitude:</strong> {{ ocorrencia.latitude }}</p>
