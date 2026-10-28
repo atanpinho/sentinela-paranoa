@@ -2,11 +2,15 @@
 from pathlib import Path
 import sqlite3
 from datetime import datetime, timezone
+from uuid import uuid4
+from io import BytesIO
+import math
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from PIL import Image
 
 from app.api.banco import CAMINHO_BANCO, inicializar_banco
 
@@ -15,6 +19,8 @@ from app.api.banco import CAMINHO_BANCO, inicializar_banco
 PASTA_PROJETO = Path(__file__).resolve().parents[2]
 PASTA_TEMPLATES = PASTA_PROJETO / "app" / "templates"
 PASTA_STATIC = PASTA_PROJETO / "app" / "static"
+PASTA_FOTOS = PASTA_STATIC / "fotos"
+
 
 # Criação da aplicação
 app = FastAPI(title="Sentinela Paranoá")
@@ -54,7 +60,8 @@ def pagina_inicial(request: Request):
                 latitude,
                 longitude,
                 precisao_metros,
-                data_captura
+                data_captura,
+                foto
             FROM ocorrencias
             ORDER BY id DESC
             """
@@ -96,8 +103,10 @@ def registrar_ocorrencia(
     longitude: str = Form(default=""),
     precisao_metros: str = Form(default=""),
     data_captura: str = Form(default=""),
+    foto: UploadFile = File(...),
 ):
     """Valida e registra uma ocorrência ambiental."""
+
     tipos_permitidos = {
         "descarte_irregular",
         "possivel_esgoto",
@@ -120,16 +129,58 @@ def registrar_ocorrencia(
             status_code=400,
         )
 
+    # Validação da fotografia
+    if foto is None or not foto.filename:
+        return HTMLResponse(
+            "Envie uma fotografia da ocorrência.",
+            status_code=400,
+        )
+
+    limite_foto = 5 * 1024 * 1024
+    conteudo_foto = foto.file.read(limite_foto + 1)
+
+    if len(conteudo_foto) > limite_foto:
+        return HTMLResponse(
+            "A fotografia deve ter no máximo 5 MB.",
+            status_code=400,
+        )
+
+    try:
+        imagem = Image.open(BytesIO(conteudo_foto))
+        formato_foto = imagem.format
+        imagem.verify()
+
+        if formato_foto not in {"JPEG", "PNG", "WEBP"}:
+            raise ValueError("Formato de imagem não permitido.")
+
+    except (
+        ValueError,
+        OSError,
+        SyntaxError,
+        Image.DecompressionBombError,
+    ):
+        return HTMLResponse(
+            "Arquivo inválido. Envie uma imagem JPEG, PNG ou WebP.",
+            status_code=400,
+        )
+
+    # Valores iniciais da localização
     latitude_valor = None
     longitude_valor = None
     precisao_valor = None
     data_captura_valor = None
 
-    # A localização é opcional.
+    # A localização é opcional
     if latitude.strip() or longitude.strip():
         try:
             latitude_valor = float(latitude)
             longitude_valor = float(longitude)
+
+            if not math.isfinite(latitude_valor):
+                raise ValueError
+
+            if not math.isfinite(longitude_valor):
+                raise ValueError
 
             if not (-90 <= latitude_valor <= 90):
                 raise ValueError
@@ -147,6 +198,9 @@ def registrar_ocorrencia(
             try:
                 precisao_valor = float(precisao_metros)
 
+                if not math.isfinite(precisao_valor):
+                    raise ValueError
+
                 if precisao_valor < 0:
                     raise ValueError
 
@@ -159,13 +213,34 @@ def registrar_ocorrencia(
         if data_captura.strip():
             data_captura_valor = data_captura.strip()
 
+    # Preparação do caminho da fotografia
+    PASTA_FOTOS.mkdir(parents=True, exist_ok=True)
+
+    extensoes_foto = {
+        "JPEG": ".jpg",
+        "PNG": ".png",
+        "WEBP": ".webp",
+    }
+
+    nome_arquivo_foto = (
+        f"{uuid4().hex}{extensoes_foto[formato_foto]}"
+    )
+
+    caminho_foto = PASTA_FOTOS / nome_arquivo_foto
+    caminho_foto_relativo = f"/static/fotos/{nome_arquivo_foto}"
+
     data_registro = datetime.now(timezone.utc).isoformat(
         timespec="seconds"
     )
 
+    # Abre o banco antes de salvar a fotografia
     conexao = obter_conexao()
 
     try:
+        # Salva a fotografia depois das validações
+        caminho_foto.write_bytes(conteudo_foto)
+
+        # Registra os dados e o caminho da fotografia
         conexao.execute(
             """
             INSERT INTO ocorrencias (
@@ -176,9 +251,10 @@ def registrar_ocorrencia(
                 latitude,
                 longitude,
                 precisao_metros,
-                data_captura
+                data_captura,
+                foto
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 tipo_ocorrencia,
@@ -189,17 +265,33 @@ def registrar_ocorrencia(
                 longitude_valor,
                 precisao_valor,
                 data_captura_valor,
+                caminho_foto_relativo,
             ),
         )
 
         conexao.commit()
 
-    except sqlite3.Error:
-        conexao.rollback()
+    except Exception:
+        # Tenta desfazer a transação sem esconder o erro original
+        try:
+            conexao.rollback()
+        except Exception:
+            pass
+
+        # Tenta remover a fotografia criada
+        try:
+            if caminho_foto.exists():
+                caminho_foto.unlink()
+        except OSError:
+            # Não substitui o erro original por uma falha de limpeza
+            pass
+
+        # Propaga novamente o erro original
         raise
 
     finally:
         conexao.close()
+        foto.file.close()
 
     return RedirectResponse(
         url="/?sucesso=1",
