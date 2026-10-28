@@ -6,13 +6,52 @@
     <meta charset="UTF-8">
     <title>Sentinela Paranoá | Monitoramento Ambiental</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="/static/estilo.css">
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+        #mapa {
+            width: 100%;
+            height: 420px;
+            min-height: 320px;
+            padding: 0;
+            overflow: hidden;
+            border-radius: 18px;
+            border: 1px solid #414B44;
+            background: #202522;
+        }
+
+        .legenda-mapa {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .mensagem-sucesso {
+            padding: 15px 18px;
+            border: 1px solid #426B52;
+            border-radius: 12px;
+            background: #253C30;
+            color: #8BD8AD;
+            font-weight: 650;
+        }
+
+        @media (max-width: 600px) {
+            #mapa {
+                height: 340px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
     {% if request.query_params.get("sucesso") == "1" %}
-        <p role="status">
+        <p class="mensagem-sucesso" role="status">
             Ocorrência registrada com sucesso!
         </p>
     {% endif %}
@@ -40,30 +79,28 @@
     </p>
 
     <div id="dados-localizacao" hidden>
-        <p>
-            <strong>Latitude:</strong>
-            <span id="latitude"></span>
-        </p>
-
-        <p>
-            <strong>Longitude:</strong>
-            <span id="longitude"></span>
-        </p>
-
-        <p>
-            <strong>Precisão estimada:</strong>
-            <span id="precisao"></span>
-        </p>
+        <p><strong>Latitude:</strong> <span id="latitude"></span></p>
+        <p><strong>Longitude:</strong> <span id="longitude"></span></p>
+        <p><strong>Precisão estimada:</strong> <span id="precisao"></span></p>
     </div>
 
     <h2>Mapa de Ocorrências Ambientais</h2>
 
+    <p>
+        O mapa começa na região do Lago Paranoá.
+        Os marcadores indicam ocorrências registradas com coordenadas geográficas.
+    </p>
+
     <div
         id="mapa"
-        aria-label="Área destinada ao mapa de ocorrências ambientais"
-    >
-        O mapa será carregado aqui.
-    </div>
+        role="region"
+        aria-label="Mapa interativo de ocorrências ambientais"
+    ></div>
+
+    <p class="legenda-mapa">
+        Os marcadores representam ocorrências registradas com GPS.
+        A localização do agente não é registrada como ocorrência automaticamente.
+    </p>
 
     <h2>Registrar ocorrência ambiental</h2>
 
@@ -78,32 +115,17 @@
 
         <label for="tipo_ocorrencia">Tipo de ocorrência:</label>
 
-        <select
-            id="tipo_ocorrencia"
-            name="tipo_ocorrencia"
-            required
-        >
+        <select id="tipo_ocorrencia" name="tipo_ocorrencia" required>
             <option value="">Selecione uma opção</option>
-            <option value="descarte_irregular">
-                Descarte irregular de lixo
-            </option>
-            <option value="possivel_esgoto">
-                Possível despejo de esgoto
-            </option>
-            <option value="alteracao_agua">
-                Alteração na cor ou no odor da água
-            </option>
-            <option value="outro">
-                Outro problema ambiental
-            </option>
+            <option value="descarte_irregular">Descarte irregular de lixo</option>
+            <option value="possivel_esgoto">Possível despejo de esgoto</option>
+            <option value="alteracao_agua">Alteração na cor ou no odor da água</option>
+            <option value="outro">Outro problema ambiental</option>
         </select>
 
         <br><br>
 
-        <label for="descricao">
-            Descreva o que você observou:
-        </label>
-
+        <label for="descricao">Descreva o que você observou:</label>
         <br>
 
         <textarea
@@ -117,7 +139,6 @@
         <br><br>
 
         <label for="local">Local da ocorrência:</label>
-
         <br>
 
         <input
@@ -139,9 +160,7 @@
     <h2>Ocorrências registradas</h2>
 
     {% if ocorrencias %}
-
         {% for ocorrencia in ocorrencias %}
-
             <article>
                 <h3>Ocorrência nº {{ ocorrencia.id }}</h3>
 
@@ -158,91 +177,106 @@
                     {% endif %}
                 </p>
 
-                <p>
-                    <strong>Descrição:</strong>
-                    {{ ocorrencia.descricao }}
-                </p>
-
-                <p>
-                    <strong>Local:</strong>
-                    {{ ocorrencia.local }}
-                </p>
+                <p><strong>Descrição:</strong> {{ ocorrencia.descricao }}</p>
+                <p><strong>Local:</strong> {{ ocorrencia.local }}</p>
 
                 {% if ocorrencia.latitude is not none and ocorrencia.longitude is not none %}
-                    <p>
-                        <strong>Latitude do dispositivo:</strong>
-                        {{ ocorrencia.latitude }}
-                    </p>
-
-                    <p>
-                        <strong>Longitude do dispositivo:</strong>
-                        {{ ocorrencia.longitude }}
-                    </p>
+                    <p><strong>Latitude:</strong> {{ ocorrencia.latitude }}</p>
+                    <p><strong>Longitude:</strong> {{ ocorrencia.longitude }}</p>
 
                     {% if ocorrencia.precisao_metros is not none %}
-                        <p>
-                            <strong>Precisão estimada:</strong>
-                            {{ ocorrencia.precisao_metros }} metros
-                        </p>
+                        <p><strong>Precisão estimada:</strong> {{ ocorrencia.precisao_metros }} metros</p>
                     {% endif %}
 
                     {% if ocorrencia.data_captura %}
-                        <p>
-                            <strong>Data da captura do GPS:</strong>
-                            {{ ocorrencia.data_captura }}
-                        </p>
+                        <p><strong>Data da captura do GPS:</strong> {{ ocorrencia.data_captura }}</p>
                     {% endif %}
                 {% else %}
-                    <p>
-                        <strong>Localização do dispositivo:</strong>
-                        Não informada.
-                    </p>
+                    <p><strong>Localização do dispositivo:</strong> Não informada.</p>
                 {% endif %}
 
-                <p>
-                    <strong>Data do registro:</strong>
-                    {{ ocorrencia.data_registro }}
-                </p>
-
+                <p><strong>Data do registro:</strong> {{ ocorrencia.data_registro }}</p>
                 <hr>
             </article>
-
         {% endfor %}
-
     {% else %}
-
         <p>Nenhuma ocorrência registrada até o momento.</p>
-
     {% endif %}
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        const botaoLocalizacao = document.getElementById(
-            "botao-localizacao"
-        );
+        // Centro aproximado do Lago Paranoá, em Brasília.
+        const centroLago = [-15.7900, -47.8200];
 
-        const statusLocalizacao = document.getElementById(
-            "status-localizacao"
-        );
+        const mapa = L.map("mapa").setView(centroLago, 12);
 
-        const dadosLocalizacao = document.getElementById(
-            "dados-localizacao"
-        );
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution:
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }
+        ).addTo(mapa);
 
-        const campoLatitude = document.getElementById(
-            "latitude-formulario"
-        );
+        const ocorrencias = {{ ocorrencias_com_gps | tojson }};
+        const marcadores = [];
 
-        const campoLongitude = document.getElementById(
-            "longitude-formulario"
-        );
+        ocorrencias.forEach(function (ocorrencia) {
+            const latitude = Number(ocorrencia.latitude);
+            const longitude = Number(ocorrencia.longitude);
 
-        const campoPrecisao = document.getElementById(
-            "precisao-formulario"
-        );
+            if (
+                Number.isFinite(latitude) &&
+                Number.isFinite(longitude) &&
+                latitude >= -90 && latitude <= 90 &&
+                longitude >= -180 && longitude <= 180
+            ) {
+                const marcador = L.marker([latitude, longitude])
+                    .addTo(mapa);
 
-        const campoDataCaptura = document.getElementById(
-            "data-captura-formulario"
-        );
+                marcador.bindPopup(
+                    "<strong>Ocorrência nº " +
+                    ocorrencia.id +
+                    "</strong><br>" +
+                    String(ocorrencia.tipo_ocorrencia || "Problema ambiental") +
+                    "<br>" +
+                    String(ocorrencia.local || "Local não informado")
+                );
+
+                marcadores.push(marcador);
+            }
+        });
+
+        if (marcadores.length > 0) {
+            const grupo = L.featureGroup(marcadores);
+
+            mapa.fitBounds(grupo.getBounds().pad(0.15), {
+                maxZoom: 15
+            });
+        }
+
+        const botaoLocalizacao =
+            document.getElementById("botao-localizacao");
+
+        const statusLocalizacao =
+            document.getElementById("status-localizacao");
+
+        const dadosLocalizacao =
+            document.getElementById("dados-localizacao");
+
+        const campoLatitude =
+            document.getElementById("latitude-formulario");
+
+        const campoLongitude =
+            document.getElementById("longitude-formulario");
+
+        const campoPrecisao =
+            document.getElementById("precisao-formulario");
+
+        const campoDataCaptura =
+            document.getElementById("data-captura-formulario");
 
         botaoLocalizacao.addEventListener("click", function () {
             if (!navigator.geolocation) {
@@ -259,7 +293,6 @@
             navigator.geolocation.getCurrentPosition(
                 function (posicao) {
                     const coordenadas = posicao.coords;
-
                     const latitude = coordenadas.latitude;
                     const longitude = coordenadas.longitude;
                     const precisao = coordenadas.accuracy;
@@ -282,8 +315,15 @@
 
                     dadosLocalizacao.hidden = false;
 
+                    L.marker([latitude, longitude])
+                        .addTo(mapa)
+                        .bindPopup("Localização atual do dispositivo")
+                        .openPopup();
+
+                    mapa.setView([latitude, longitude], 15);
+
                     statusLocalizacao.textContent =
-                        "Localização obtida e preparada para o registro.";
+                        "Localização obtida. Ela será enviada com a ocorrência se você registrar o formulário.";
 
                     botaoLocalizacao.disabled = false;
                 },
@@ -293,12 +333,10 @@
 
                     if (erro.code === 1) {
                         mensagem =
-                            "Permissão negada. Autorize a localização " +
-                            "nas configurações do navegador.";
+                            "Permissão negada. Autorize a localização nas configurações do navegador.";
                     } else if (erro.code === 2) {
                         mensagem =
-                            "Não foi possível determinar a localização. " +
-                            "Verifique o serviço de localização do dispositivo.";
+                            "Não foi possível determinar a localização do dispositivo.";
                     } else if (erro.code === 3) {
                         mensagem =
                             "A localização demorou demais. Tente novamente.";
