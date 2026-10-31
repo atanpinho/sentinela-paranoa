@@ -1,18 +1,27 @@
+
 from pathlib import Path
 import sqlite3
 
+
 # Localiza a pasta principal do projeto.
 PASTA_PROJETO = Path(__file__).resolve().parents[2]
+
 
 # Caminho do banco de dados existente.
 CAMINHO_BANCO = PASTA_PROJETO / "sentinela.db"
 
 
 def inicializar_banco():
+    """Cria as tabelas necessárias sem apagar os dados existentes."""
+
     conexao = sqlite3.connect(CAMINHO_BANCO)
 
     try:
         cursor = conexao.cursor()
+
+        # ==================================================
+        # TABELA DE OCORRÊNCIAS AMBIENTAIS
+        # ==================================================
 
         # Cria a tabela somente se ela ainda não existir.
         cursor.execute("""
@@ -25,7 +34,7 @@ def inicializar_banco():
             )
         """)
 
-        # Descobre as colunas que já existem.
+        # Descobre as colunas que já existem na tabela.
         cursor.execute("PRAGMA table_info(ocorrencias)")
 
         colunas_existentes = {
@@ -49,7 +58,21 @@ def inicializar_banco():
                     f"ADD COLUMN {nome_coluna} {tipo_coluna}"
                 )
 
-        # Salva as alterações.
+        # ==================================================
+        # TABELA DE COMENTÁRIOS DA COMUNIDADE
+        # ==================================================
+
+        # Cria uma tabela independente para os comentários.
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS comentarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT,
+                mensagem TEXT NOT NULL,
+                data_registro TEXT NOT NULL
+            )
+        """)
+
+        # Salva as alterações no banco de dados.
         conexao.commit()
 
     except Exception:
@@ -58,7 +81,7 @@ def inicializar_banco():
         raise
 
     finally:
-        # Fecha o banco de dados.
+        # Fecha a conexão com o banco.
         conexao.close()
 
 
