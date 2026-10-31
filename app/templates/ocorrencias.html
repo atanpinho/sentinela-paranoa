@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ocorrências Ambientais | Sentinela Paranoá</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f3f6f4;
+            color: #26352d;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #174c38;
+            color: white;
+            padding: 28px 5%;
+        }
+
+        .cabecalho-conteudo {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #dcebe2;
+            font-size: 15px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-bottom: 25px;
+            color: #176344;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .voltar:hover {
+            text-decoration: underline;
+        }
+
+        .titulo-pagina {
+            margin-bottom: 25px;
+        }
+
+        .titulo-pagina h2 {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .titulo-pagina p {
+            color: #64736a;
+            line-height: 1.5;
+        }
+
+        .painel-busca {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .painel-busca form {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .campo label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .campo input,
+        .campo select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd7cf;
+            border-radius: 7px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .botao {
+            display: inline-block;
+            border: none;
+            border-radius: 7px;
+            padding: 13px 20px;
+            background: #176344;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .botao:hover {
+            background: #104a32;
+        }
+
+        .resumo {
+            margin: 20px 0;
+            color: #53635a;
+            font-size: 14px;
+        }
+
+        .lista-ocorrencias {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .ocorrencia {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .ocorrencia img {
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+            display: block;
+            background: #e4ebe6;
+        }
+
+        .conteudo-ocorrencia {
+            padding: 20px;
+        }
+
+        .tipo {
+            display: inline-block;
+            background: #e1f1e7;
+            color: #176344;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .conteudo-ocorrencia h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .informacao {
+            font-size: 14px;
+            color: #59675e;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .detalhes-gps {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #e5ebe6;
+        }
+
+        .detalhes-gps summary {
+            color: #176344;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .detalhes-gps p {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #59675e;
+            line-height: 1.6;
+        }
+
+        .sem-ocorrencias {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #64736a;
+            line-height: 1.7;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding: 25px 20px;
+            text-align: center;
+            color: #718077;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            header {
+                padding: 24px 20px;
+            }
+
+            .painel-busca form {
+                grid-template-columns: 1fr;
+            }
+
+            .titulo-pagina h2 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="cabecalho-conteudo">
+            <h1>Sentinela Paranoá</h1>
+            <p>Monitoramento ambiental comunitário</p>
+        </div>
+    </header>
+
+    <main>
+
+        <a class="voltar" href="/">
+            ← Voltar ao painel principal
+        </a>
+
+        <section class="titulo-pagina">
+            <h2>Ocorrências Ambientais</h2>
+
+            <p>
+                Consulte os registros enviados pela comunidade
+                para o monitoramento ambiental do Lago Paranoá
+                e de seus afluentes.
+            </p>
+        </section>
+
+        <section class="painel-busca">
+
+            <form action="/ocorrencias" method="get">
+
+                <div class="campo">
+                    <label for="busca">Pesquisar ocorrências</label>
+
+                    <input
+                        type="text"
+                        id="busca"
+                        name="busca"
+                        placeholder="Digite uma descrição ou local..."
+                        value="{{ busca }}"
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="tipo">Tipo de ocorrência</label>
+
+                    <select id="tipo" name="tipo">
+
+                        <option value="">Todos os tipos</option>
+
+                        <option
+                            value="descarte_irregular"
+                            {% if tipo_selecionado == "descarte_irregular" %}selected{% endif %}
+                        >
+                            Descarte irregular de lixo
+                        </option>
+
+                        <option
+                            value="possivel_esgoto"
+                            {% if tipo_selecionado == "possivel_esgoto" %}selected{% endif %}
+                        >
+                            Possível lançamento de esgoto
+                        </option>
+
+                        <option
+                            value="alteracao_agua"
+                            {% if tipo_selecionado == "alteracao_agua" %}selected{% endif %}
+                        >
+                            Alteração na água
+                        </option>
+
+                        <option
+                            value="outro"
+                            {% if tipo_selecionado == "outro" %}selected{% endif %}
+                        >
+                            Outro problema ambiental
+                        </option>
+
+                    </select>
+                </div>
+
+                <button class="botao" type="submit">
+                    Pesquisar
+                </button>
+
+            </form>
+
+        </section>
+
+        <p class="resumo">
+            Exibindo {{ total_encontrado }} ocorrência(s)
+            de um total de {{ total_registros }} registro(s).
+        </p>
+
+        {% if ocorrencias %}
+
+            <section class="lista-ocorrencias">
+
+                {% for ocorrencia in ocorrencias %}
+
+                    <article class="ocorrencia">
+
+                        {% if ocorrencia.foto %}
+                            <img
+                                src="{{ ocorrencia.foto }}"
+                                alt="Fotografia da ocorrência ambiental"
+                                loading="lazy"
+                            >
+                        {% endif %}
+
+                        <div class="conteudo-ocorrencia">
+
+                            {% if ocorrencia.tipo_ocorrencia == "descarte_irregular" %}
+                                <span class="tipo">
+                                    Descarte irregular de lixo
+                                </span>
+
+                            {% elif ocorrencia.tipo_ocorrencia == "possivel_esgoto" %}
+                                <span class="tipo">
+                                    Possível lançamento de esgoto
+                                </span>
+
+                            {% elif ocorrencia.tipo_ocorrencia == "alteracao_agua" %}
+                                <span class="tipo">
+                                    Alteração na água
+                                </span>
+
+                            {% else %}
+                                <span class="tipo">
+                                    Outro problema ambiental
+                                </span>
+                            {% endif %}
+
+                            <h3>
+                                Ocorrência #{{ ocorrencia.id }}
+                            </h3>
+
+                            <p class="informacao">
+                                <strong>Descrição:</strong><br>
+                                {{ ocorrencia.descricao }}
+                            </p>
+
+                            <p class="informacao">
+                                <strong>Local informado:</strong><br>
+                                {{ ocorrencia.local }}
+                            </p>
+
+                            <p class="informacao">
+                                <strong>Data do registro:</strong><br>
+                                {{ ocorrencia.data_registro }}
+                            </p>
+
+                            {% if ocorrencia.latitude is not none
+                                  and ocorrencia.longitude is not none %}
+
+                                <details class="detalhes-gps">
+
+                                    <summary>
+                                        Consultar informações de GPS
+                                    </summary>
+
+                                    <p>
+                                        <strong>Latitude:</strong>
+                                        {{ ocorrencia.latitude }}
+                                    </p>
+
+                                    <p>
+                                        <strong>Longitude:</strong>
+                                        {{ ocorrencia.longitude }}
+                                    </p>
+
+                                    {% if ocorrencia.precisao_metros is not none %}
+                                        <p>
+                                            <strong>Precisão informada:</strong>
+                                            {{ ocorrencia.precisao_metros }} metros
+                                        </p>
+                                    {% endif %}
+
+                                    {% if ocorrencia.data_captura %}
+                                        <p>
+                                            <strong>Data da captura:</strong>
+                                            {{ ocorrencia.data_captura }}
+                                        </p>
+                                    {% endif %}
+
+                                </details>
+
+                            {% else %}
+
+                                <p class="informacao">
+                                    <strong>Localização GPS:</strong>
+                                    Não informada.
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </section>
+
+        {% else %}
+
+            <section class="sem-ocorrencias">
+
+                <h3>Nenhuma ocorrência encontrada</h3>
+
+                <p>
+                    Não existem registros correspondentes
+                    aos critérios informados.
+                </p>
+
+                <p>
+                    Experimente alterar a pesquisa ou selecionar
+                    outro tipo de ocorrência.
+                </p>
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+    <footer>
+        Sentinela Paranoá — Ciência Cidadã e Monitoramento Ambiental
+    </footer>
+
+</body>
+</html>
