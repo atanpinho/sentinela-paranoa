@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
-    <title>Sentinela Paranoá | Monitoramento Ambiental</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sentinela Paranoá | Painel Ambiental</title>
 
     <link rel="stylesheet" href="/static/estilo.css">
 
@@ -15,32 +14,533 @@
     >
 
     <style>
-        #mapa {
-            width: 100%;
-            height: 420px;
-            min-height: 320px;
-            padding: 0;
-            overflow: hidden;
-            border-radius: 18px;
-            border: 1px solid #414B44;
-            background: #202522;
+        :root {
+            --verde: #2f855a;
+            --verde-escuro: #123d32;
+            --verde-claro: #e5f1e8;
+            --fundo: #f3f6f4;
+            --branco: #fff;
+            --texto: #1d2b25;
+            --texto-suave: #64736b;
+            --borda: #dce5de;
+            --sombra: 0 8px 24px rgba(18, 61, 50, .07);
         }
 
-        .legenda-mapa {
-            margin-top: 10px;
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: "Segoe UI", Arial, sans-serif;
             font-size: 14px;
+            line-height: 1.5;
+        }
+
+        button, input, select, textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .aplicacao {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .barra-lateral {
+            width: 245px;
+            flex-shrink: 0;
+            padding: 28px 18px;
+            background: var(--verde-escuro);
+            color: white;
+        }
+
+        .marca {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 42px;
+        }
+
+        .marca-icone {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            background: var(--verde);
+            font-size: 21px;
+        }
+
+        .marca strong {
+            display: block;
+            font-size: 16px;
+        }
+
+        .marca span {
+            display: block;
+            margin-top: 4px;
+            color: #b8d0c4;
+            font-size: 11px;
+        }
+
+        .menu-titulo {
+            margin: 0 0 12px 10px;
+            color: #9bb9aa;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .menu {
+            display: grid;
+            gap: 8px;
+        }
+
+        .menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 13px;
+            border-radius: 10px;
+            color: #d8e8df;
+            text-decoration: none;
+        }
+
+        .menu a:hover,
+        .menu a.ativo {
+            background: rgba(255,255,255,.12);
+            color: white;
+        }
+
+        .menu-icone {
+            width: 20px;
+            text-align: center;
+            font-size: 17px;
+        }
+
+        .aviso-lateral {
+            margin-top: 38px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,.14);
+            border-radius: 12px;
+            color: #d8e8df;
+            font-size: 12px;
+        }
+
+        .aviso-lateral strong {
+            display: block;
+            margin-bottom: 6px;
+            color: white;
+        }
+
+        .conteudo {
+            min-width: 0;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .cabecalho {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .sobretitulo {
+            margin: 0 0 5px;
+            color: var(--texto-suave);
+            font-size: 12px;
+        }
+
+        .cabecalho h1 {
+            margin: 0;
+            font-size: clamp(23px, 3vw, 30px);
+            line-height: 1.2;
+        }
+
+        .cabecalho-descricao {
+            margin: 8px 0 0;
+            color: var(--texto-suave);
+        }
+
+        .status-sistema {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 13px;
+            border: 1px solid var(--borda);
+            border-radius: 999px;
+            background: white;
+            color: var(--texto-suave);
+            white-space: nowrap;
+            font-size: 12px;
+        }
+
+        .status-ponto {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #35a66b;
         }
 
         .mensagem-sucesso {
-            padding: 15px 18px;
-            border: 1px solid #426B52;
-            border-radius: 12px;
-            background: #253C30;
-            color: #8BD8AD;
-            font-weight: 650;
+            margin-bottom: 20px;
+            padding: 13px 16px;
+            border: 1px solid #b9dfc8;
+            border-radius: 10px;
+            background: #eaf7ef;
+            color: #205c3b;
         }
 
-        @media (max-width: 600px) {
+        .indicadores {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .cartao-indicador {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+            padding: 19px;
+            border: 1px solid var(--borda);
+            border-radius: 15px;
+            background: white;
+            box-shadow: var(--sombra);
+        }
+
+        .indicador-icone {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: var(--verde-claro);
+            font-size: 20px;
+        }
+
+        .indicador-rotulo {
+            margin: 0 0 3px;
+            color: var(--texto-suave);
+            font-size: 12px;
+        }
+
+        .indicador-valor {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .grade-principal {
+            display: grid;
+            grid-template-columns: minmax(0, 1.65fr) minmax(290px, .85fr);
+            align-items: start;
+            gap: 20px;
+        }
+
+        .coluna {
+            display: grid;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .cartao {
+            min-width: 0;
+            overflow: hidden;
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            background: white;
+            box-shadow: var(--sombra);
+        }
+
+        .cartao-cabecalho {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 20px 22px 16px;
+            border-bottom: 1px solid #edf1ee;
+        }
+
+        .cartao-cabecalho h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .cartao-cabecalho p {
+            margin: 5px 0 0;
+            color: var(--texto-suave);
+            font-size: 12px;
+        }
+
+        .etiqueta {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 9px;
+            border-radius: 999px;
+            background: var(--verde-claro);
+            color: var(--verde-escuro);
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        #mapa {
+            width: 100%;
+            height: 440px;
+            min-height: 320px;
+            background: #e7eee9;
+        }
+
+        .legenda-mapa {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 13px 20px;
+            color: var(--texto-suave);
+            font-size: 11px;
+        }
+
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .legenda-ponto {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #2f855a;
+        }
+
+        .legenda-ponto.localizacao {
+            background: #2878d0;
+        }
+
+        .formulario {
+            display: grid;
+            gap: 14px;
+            padding: 20px 22px 22px;
+        }
+
+        .campo {
+            display: grid;
+            gap: 6px;
+        }
+
+        .campo label {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .campo input,
+        .campo select,
+        .campo textarea {
+            width: 100%;
+            min-width: 0;
+            padding: 11px 12px;
+            border: 1px solid #d6e0d9;
+            border-radius: 9px;
+            outline: none;
+            background: white;
+            color: var(--texto);
+        }
+
+        .campo input:focus,
+        .campo select:focus,
+        .campo textarea:focus {
+            border-color: var(--verde);
+            box-shadow: 0 0 0 3px rgba(47,133,90,.1);
+        }
+
+        .campo textarea {
+            min-height: 95px;
+            resize: vertical;
+        }
+
+        .botao {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 15px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--verde);
+            color: white;
+            font-weight: 700;
+        }
+
+        .botao:hover {
+            background: #246b48;
+        }
+
+        .botao-secundario {
+            border: 1px solid var(--borda);
+            background: white;
+            color: var(--verde-escuro);
+        }
+
+        .botao-secundario:hover {
+            background: var(--verde-claro);
+        }
+
+        .status-localizacao {
+            margin: 0;
+            color: var(--texto-suave);
+            font-size: 12px;
+        }
+
+        /* ==========================================
+           SEÇÃO DE COMENTÁRIOS DA COMUNIDADE
+           ========================================== */
+
+        .secao-comentarios {
+            margin-top: 22px;
+        }
+
+        .lista-comentarios {
+            display: grid;
+            gap: 12px;
+            padding: 20px 22px 22px;
+        }
+
+        .comentario-item {
+            padding: 14px;
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            background: #fbfdfb;
+        }
+
+        .comentario-identificacao {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+
+        .comentario-nome {
+            margin: 0;
+            color: var(--verde-escuro);
+            font-weight: 700;
+        }
+
+        .comentario-data {
+            color: var(--texto-suave);
+            font-size: 11px;
+        }
+
+        .comentario-mensagem {
+            margin: 0;
+            color: var(--texto);
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .comentarios-vazio {
+            margin: 0;
+            padding: 18px 22px 22px;
+            color: var(--texto-suave);
+            text-align: center;
+        }
+
+        .rodape {
+            padding: 24px 0 4px;
+            color: var(--texto-suave);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        @media (max-width: 1100px) {
+            .barra-lateral {
+                width: 210px;
+            }
+
+            .conteudo {
+                padding: 22px;
+            }
+
+            .indicadores {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .grade-principal {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .aplicacao {
+                display: block;
+            }
+
+            .barra-lateral {
+                width: 100%;
+                padding: 16px;
+            }
+
+            .marca {
+                margin-bottom: 18px;
+            }
+
+            .menu {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .menu-titulo,
+            .aviso-lateral {
+                display: none;
+            }
+
+            .conteudo {
+                padding: 18px 14px;
+            }
+
+            .cabecalho {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .indicadores {
+                gap: 10px;
+            }
+
+            .cartao-indicador {
+                padding: 13px;
+                gap: 10px;
+            }
+
+            .indicador-icone {
+                width: 36px;
+                height: 36px;
+                font-size: 17px;
+            }
+
+            .indicador-valor {
+                font-size: 18px;
+            }
+
+            .cartao-cabecalho,
+            .formulario,
+            .lista-comentarios {
+                padding: 16px;
+            }
+
             #mapa {
                 height: 340px;
             }
@@ -49,344 +549,606 @@
 </head>
 
 <body>
+<div class="aplicacao">
 
-    {% if request.query_params.get("sucesso") == "1" %}
-        <p class="mensagem-sucesso" role="status">
-            Ocorrência registrada com sucesso!
-        </p>
-    {% endif %}
+    <aside class="barra-lateral">
 
-    <h1>Sentinela Paranoá</h1>
+        <div class="marca">
+            <div class="marca-icone" aria-hidden="true">🌿</div>
 
-    <p>
-        Uma iniciativa de monitoramento ambiental comunitário
-        para proteger o Lago Paranoá e seus afluentes.
-    </p>
+            <div>
+                <strong>Sentinela Paranoá</strong>
+                <span>Monitoramento ambiental</span>
+            </div>
+        </div>
 
-    <h2>Localização do agente comunitário</h2>
+        <p class="menu-titulo">Painel</p>
 
-    <p>
-        Use o botão abaixo para obter a localização atual do dispositivo.
-        Essa posição pode ser diferente do local da ocorrência.
-    </p>
+        <nav class="menu" aria-label="Navegação principal">
+            <a class="ativo" href="#inicio">
+                <span class="menu-icone">▦</span>
+                Visão geral
+            </a>
 
-    <button type="button" id="botao-localizacao">
-        Obter minha localização
-    </button>
+            <a href="#mapa-secao">
+                <span class="menu-icone">⌖</span>
+                Mapa ambiental
+            </a>
 
-    <p id="status-localizacao" role="status" aria-live="polite">
-        Aguardando solicitação de localização.
-    </p>
+            <a href="#registrar">
+                <span class="menu-icone">＋</span>
+                Registrar ocorrência
+            </a>
 
-    <div id="dados-localizacao" hidden>
-        <p><strong>Latitude:</strong> <span id="latitude"></span></p>
-        <p><strong>Longitude:</strong> <span id="longitude"></span></p>
-        <p><strong>Precisão estimada:</strong> <span id="precisao"></span></p>
-    </div>
+            <a href="/ocorrencias">
+                <span class="menu-icone">☷</span>
+                Ocorrências
+            </a>
 
-    <h2>Mapa de Ocorrências Ambientais</h2>
+            <a href="#comentarios">
+                <span class="menu-icone">💬</span>
+                Comentários
+            </a>
+        </nav>
 
-    <p>
-        O mapa começa na região do Lago Paranoá.
-        Os marcadores indicam ocorrências registradas com coordenadas geográficas.
-    </p>
+        <div class="aviso-lateral">
+            <strong>Você é uma sentinela</strong>
 
-    <div
-        id="mapa"
-        role="region"
-        aria-label="Mapa interativo de ocorrências ambientais"
-    ></div>
+            A participação da comunidade ajuda a identificar situações
+            que precisam de atenção ambiental.
+        </div>
 
-    <p class="legenda-mapa">
-        Os marcadores representam ocorrências registradas com GPS.
-        A localização do agente não é registrada como ocorrência automaticamente.
-    </p>
+    </aside>
 
-    <h2>Registrar ocorrência ambiental</h2>
+    <main class="conteudo" id="inicio">
 
-    <p>Relate um possível problema ambiental para avaliação.</p>
+        <header class="cabecalho">
 
-    <form
-        action="/ocorrencias"
-        method="post"
-        id="formulario-ocorrencia"
-        enctype="multipart/form-data"
->
+            <div>
+                <p class="sobretitulo">PAINEL DE MONITORAMENTO</p>
 
-        <input type="hidden" id="latitude-formulario" name="latitude">
-        <input type="hidden" id="longitude-formulario" name="longitude">
-        <input type="hidden" id="precisao-formulario" name="precisao_metros">
-        <input type="hidden" id="data-captura-formulario" name="data_captura">
+                <h1>Visão geral ambiental</h1>
 
-        <label for="tipo_ocorrencia">Tipo de ocorrência:</label>
-
-        <select id="tipo_ocorrencia" name="tipo_ocorrencia" required>
-            <option value="">Selecione uma opção</option>
-            <option value="descarte_irregular">Descarte irregular de lixo</option>
-            <option value="possivel_esgoto">Possível despejo de esgoto</option>
-            <option value="alteracao_agua">Alteração na cor ou no odor da água</option>
-            <option value="outro">Outro problema ambiental</option>
-        </select>
-
-        <br><br>
-
-        <label for="descricao">Descreva o que você observou:</label>
-        <br>
-
-        <textarea
-            id="descricao"
-            name="descricao"
-            rows="4"
-            placeholder="Conte o que aconteceu, o que observou e quando..."
-            required
-        ></textarea>
-
-        <br><br>
-
-       
-        <label for="local">Local da ocorrência:</label>
-        <br>
-
-        <input
-            type="text"
-            id="local"
-            name="local"
-            placeholder="Ex.: próximo a uma ponte ou rua"
-            required
-        >
-
-        <br><br>
-
-        <label for="foto">Fotografia da ocorrência:</label>
-        <br>
-
-        <input
-            type="file"
-            id="foto"
-            name="foto"
-            accept="image/jpeg,image/png,image/webp"
-            capture="environment"
-            required
-        >
-
-        <br><br>
-
-        <button type="submit">Registrar ocorrência</button>
-
-    </form>
-
-    <hr>
-
-    <h2>Ocorrências registradas</h2>
-
-    {% if ocorrencias %}
-        {% for ocorrencia in ocorrencias %}
-            <article>
-                <h3>Ocorrência nº {{ ocorrencia.id }}</h3>
-
-                <p>
-                    <strong>Tipo:</strong>
-                    {% if ocorrencia.tipo_ocorrencia == "descarte_irregular" %}
-                        Descarte irregular de lixo
-                    {% elif ocorrencia.tipo_ocorrencia == "possivel_esgoto" %}
-                        Possível despejo de esgoto
-                    {% elif ocorrencia.tipo_ocorrencia == "alteracao_agua" %}
-                        Alteração na cor ou no odor da água
-                    {% else %}
-                        Outro problema ambiental
-                    {% endif %}
+                <p class="cabecalho-descricao">
+                    Acompanhe os registros comunitários na região do Lago Paranoá.
                 </p>
-                
-                <p><strong>Descrição:</strong> {{ ocorrencia.descricao }}</p>
-                <p><strong>Local:</strong> {{ ocorrencia.local }}</p>
+            </div>
 
-                {% if ocorrencia.foto %}
-                    <p><strong>Fotografia da ocorrência:</strong></p>
-                    <img
-                        src="{{ ocorrencia.foto }}"
-                        alt="Fotografia da ocorrência nº {{ ocorrencia.id }}"
-                        style="max-width: 100%; width: 500px; height: auto; border-radius: 12px;"
-                        loading="lazy"
-                    >
-                {% endif %}
+            <div class="status-sistema">
+                <span class="status-ponto" aria-hidden="true"></span>
+                Painel de ocorrências
+            </div>
 
-                {% if ocorrencia.latitude is not none and ocorrencia.longitude is not none %}
-                    <p><strong>Latitude:</strong> {{ ocorrencia.latitude }}</p>
-                    <p><strong>Longitude:</strong> {{ ocorrencia.longitude }}</p>
+        </header>
 
-                    {% if ocorrencia.precisao_metros is not none %}
-                        <p><strong>Precisão estimada:</strong> {{ ocorrencia.precisao_metros }} metros</p>
-                    {% endif %}
+        {% if request.query_params.get("sucesso") == "1" %}
+            <div class="mensagem-sucesso" role="status">
+                Ocorrência registrada. Obrigado por contribuir com o
+                monitoramento ambiental.
+            </div>
+        {% endif %}
 
-                    {% if ocorrencia.data_captura %}
-                        <p><strong>Data da captura do GPS:</strong> {{ ocorrencia.data_captura }}</p>
-                    {% endif %}
-                {% else %}
-                    <p><strong>Localização do dispositivo:</strong> Não informada.</p>
-                {% endif %}
+        {% if request.query_params.get("comentario") == "1" %}
+            <div class="mensagem-sucesso" role="status">
+                Comentário enviado. Obrigado por participar da comunidade!
+            </div>
+        {% endif %}
 
-                <p><strong>Data do registro:</strong> {{ ocorrencia.data_registro }}</p>
-                <hr>
+        <section class="indicadores" aria-label="Resumo das ocorrências">
+
+            <article class="cartao-indicador">
+                <div class="indicador-icone">📋</div>
+
+                <div>
+                    <p class="indicador-rotulo">Registros recebidos</p>
+                    <p class="indicador-valor">{{ ocorrencias|length }}</p>
+                </div>
             </article>
-        {% endfor %}
-    {% else %}
-        <p>Nenhuma ocorrência registrada até o momento.</p>
-    {% endif %}
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <article class="cartao-indicador">
+                <div class="indicador-icone">📍</div>
 
-    <script>
-        // Centro aproximado do Lago Paranoá, em Brasília.
-        const centroLago = [-15.7900, -47.8200];
+                <div>
+                    <p class="indicador-rotulo">Com localização GPS</p>
+                    <p class="indicador-valor">{{ ocorrencias_com_gps|length }}</p>
+                </div>
+            </article>
 
-        const mapa = L.map("mapa").setView(centroLago, 12);
+            <article class="cartao-indicador">
+                <div class="indicador-icone">🌱</div>
 
-        L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                <div>
+                    <p class="indicador-rotulo">Área monitorada</p>
+                    <p class="indicador-valor">Paranoá</p>
+                </div>
+            </article>
+
+            <article class="cartao-indicador">
+                <div class="indicador-icone">🤝</div>
+
+                <div>
+                    <p class="indicador-rotulo">Participação</p>
+                    <p class="indicador-valor">Comunitária</p>
+                </div>
+            </article>
+
+        </section>
+
+        <div class="grade-principal">
+
+            <div class="coluna">
+
+                <section class="cartao" id="mapa-secao">
+
+                    <div class="cartao-cabecalho">
+                        <div>
+                            <h2>Mapa de ocorrências ambientais</h2>
+
+                            <p>
+                                Registros com coordenadas aparecem como
+                                marcadores no mapa.
+                            </p>
+                        </div>
+
+                        <span class="etiqueta">Mapa interativo</span>
+                    </div>
+
+                    <div
+                        id="mapa"
+                        role="region"
+                        aria-label="Mapa das ocorrências ambientais"
+                    ></div>
+
+                    <div class="legenda-mapa">
+                        <span class="legenda-item">
+                            <span class="legenda-ponto"></span>
+                            Ocorrência registrada
+                        </span>
+
+                        <span class="legenda-item">
+                            <span class="legenda-ponto localizacao"></span>
+                            Sua localização
+                        </span>
+                    </div>
+
+                </section>
+
+            </div>
+
+            <div class="coluna">
+
+                <section class="cartao" id="registrar">
+
+                    <div class="cartao-cabecalho">
+                        <div>
+                            <h2>Registrar ocorrência</h2>
+
+                            <p>
+                                Compartilhe um possível problema ambiental.
+                            </p>
+                        </div>
+
+                        <span class="etiqueta">Novo registro</span>
+                    </div>
+
+                    <form
+                        class="formulario"
+                        action="/ocorrencias"
+                        method="post"
+                        enctype="multipart/form-data"
+                    >
+
+                        <div class="campo">
+                            <label for="tipo_ocorrencia">
+                                Tipo de ocorrência
+                            </label>
+
+                            <select
+                                id="tipo_ocorrencia"
+                                name="tipo_ocorrencia"
+                                required
+                            >
+                                <option value="">Selecione uma opção</option>
+                                <option value="descarte_irregular">
+                                    Descarte irregular de lixo
+                                </option>
+                                <option value="possivel_esgoto">
+                                    Possível lançamento de esgoto
+                                </option>
+                                <option value="alteracao_agua">
+                                    Alteração na água
+                                </option>
+                                <option value="outro">
+                                    Outro problema ambiental
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="campo">
+                            <label for="descricao">Descrição</label>
+
+                            <textarea
+                                id="descricao"
+                                name="descricao"
+                                placeholder="Conte o que você observou..."
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div class="campo">
+                            <label for="local">Local da ocorrência</label>
+
+                            <input
+                                id="local"
+                                name="local"
+                                type="text"
+                                placeholder="Ex.: próximo à margem do lago"
+                                required
+                            >
+                        </div>
+
+                        <div class="campo">
+                            <label for="foto">Fotografia</label>
+
+                            <input
+                                id="foto"
+                                name="foto"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                required
+                            >
+                        </div>
+
+                        <input
+                            type="hidden"
+                            id="latitude"
+                            name="latitude"
+                        >
+
+                        <input
+                            type="hidden"
+                            id="longitude"
+                            name="longitude"
+                        >
+
+                        <input
+                            type="hidden"
+                            id="precisao_metros"
+                            name="precisao_metros"
+                        >
+
+                        <input
+                            type="hidden"
+                            id="data_captura"
+                            name="data_captura"
+                        >
+
+                        <button
+                            class="botao botao-secundario"
+                            type="button"
+                            id="botao-localizacao"
+                        >
+                            ⌖ Usar minha localização
+                        </button>
+
+                        <p
+                            class="status-localizacao"
+                            id="status-localizacao"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            A localização é opcional.
+                            Você pode preencher o local manualmente.
+                        </p>
+
+                        <button class="botao" type="submit">
+                            Enviar ocorrência
+                        </button>
+
+                    </form>
+
+                </section>
+
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             COMENTÁRIOS DA COMUNIDADE
+             ========================================== -->
+
+        <section
+            class="cartao secao-comentarios"
+            id="comentarios"
+            aria-labelledby="titulo-comentarios"
+        >
+
+            <div class="cartao-cabecalho">
+                <div>
+                    <h2 id="titulo-comentarios">
+                        Comentários da Comunidade
+                    </h2>
+
+                    <p>
+                        Compartilhe suas observações e contribua com a
+                        comunidade do Lago Paranoá.
+                    </p>
+                </div>
+
+                <span class="etiqueta">Participação</span>
+            </div>
+
+            <form
+                class="formulario"
+                action="/comentarios"
+                method="post"
+            >
+
+                <div class="campo">
+                    <label for="nome-comentario">
+                        Nome (opcional)
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nome-comentario"
+                        name="nome"
+                        maxlength="60"
+                        placeholder="Como gostaria de ser identificado?"
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="mensagem-comentario">
+                        Seu comentário
+                    </label>
+
+                    <textarea
+                        id="mensagem-comentario"
+                        name="mensagem"
+                        maxlength="1000"
+                        placeholder="Escreva sua mensagem para a comunidade..."
+                        required
+                    ></textarea>
+                </div>
+
+                <button class="botao" type="submit">
+                    Enviar comentário
+                </button>
+
+            </form>
+
+            <div class="cartao-cabecalho">
+                <div>
+                    <h2>Comentários publicados</h2>
+
+                    <p>
+                        As contribuições mais recentes aparecem primeiro.
+                    </p>
+                </div>
+            </div>
+
+            {% if comentarios %}
+
+                <div class="lista-comentarios">
+
+                    {% for comentario in comentarios %}
+
+                        <article class="comentario-item">
+
+                            <div class="comentario-identificacao">
+
+                                <p class="comentario-nome">
+                                    {% if comentario.nome %}
+                                        {{ comentario.nome }}
+                                    {% else %}
+                                        Participante da comunidade
+                                    {% endif %}
+                                </p>
+
+                                <time class="comentario-data">
+                                    {{ comentario.data_registro }}
+                                </time>
+
+                            </div>
+
+                            <p class="comentario-mensagem">{{ comentario.mensagem }}</p>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <p class="comentarios-vazio">
+                    Ainda não há comentários publicados.
+                    Seja a primeira pessoa a compartilhar uma mensagem!
+                </p>
+
+            {% endif %}
+
+        </section>
+
+        <footer class="rodape">
+            Sentinela Paranoá · Monitoramento ambiental comunitário
+
+            <p>
+                <a href="/politica-privacidade">Política de Privacidade</a>
+            </p>
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Inicializa o mapa na região do Lago Paranoá.
+    const mapa = L.map("mapa").setView([-15.7942, -47.8259], 12);
+
+    // Adiciona o mapa-base do OpenStreetMap.
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution:
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }
+    ).addTo(mapa);
+
+    const marcadores = [];
+
+    // Cria um marcador para cada ocorrência que possui coordenadas.
+    {% for ocorrencia in ocorrencias_com_gps %}
+    {
+        const latitudeOcorrencia = {{ ocorrencia.latitude|tojson }};
+        const longitudeOcorrencia = {{ ocorrencia.longitude|tojson }};
+
+        const marcadorOcorrencia = L.marker([
+            latitudeOcorrencia,
+            longitudeOcorrencia
+        ]).addTo(mapa);
+
+        /*
+         * SEGURANÇA:
+         * Os dados enviados pelos cidadãos são inseridos usando
+         * textContent. Assim, o navegador os trata como texto comum,
+         * sem interpretar possíveis códigos HTML ou JavaScript.
+         */
+
+        const conteudoPopup = document.createElement("div");
+
+        const tituloPopup = document.createElement("strong");
+        tituloPopup.textContent = "Tipo de ocorrência: ";
+
+        const tipoPopup = document.createElement("span");
+        tipoPopup.textContent = {{ ocorrencia.tipo_ocorrencia|tojson }};
+
+        tituloPopup.appendChild(tipoPopup);
+
+        const descricaoPopup = document.createElement("p");
+        descricaoPopup.textContent = {{ ocorrencia.descricao|tojson }};
+
+        conteudoPopup.appendChild(tituloPopup);
+        conteudoPopup.appendChild(descricaoPopup);
+
+        marcadorOcorrencia.bindPopup(conteudoPopup);
+
+        marcadores.push(marcadorOcorrencia);
+    }
+    {% endfor %}
+
+    // Ajusta o mapa para mostrar todos os marcadores existentes.
+    if (marcadores.length > 0) {
+        const grupoMarcadores = L.featureGroup(marcadores);
+
+        mapa.fitBounds(
+            grupoMarcadores.getBounds(),
             {
-                attribution:
-                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19
+                padding: [30, 30]
             }
-        ).addTo(mapa);
+        );
+    }
 
-        const ocorrencias = {{ ocorrencias_com_gps | tojson }};
-        const marcadores = [];
+    // Ajusta a apresentação do mapa após o carregamento do painel.
+    setTimeout(function () {
+        mapa.invalidateSize();
+    }, 300);
 
-        ocorrencias.forEach(function (ocorrencia) {
-            const latitude = Number(ocorrencia.latitude);
-            const longitude = Number(ocorrencia.longitude);
+    // Referências aos campos de localização do formulário.
+    const botaoLocalizacao =
+        document.getElementById("botao-localizacao");
 
-            if (
-                Number.isFinite(latitude) &&
-                Number.isFinite(longitude) &&
-                latitude >= -90 && latitude <= 90 &&
-                longitude >= -180 && longitude <= 180
-            ) {
-                const marcador = L.marker([latitude, longitude])
-                    .addTo(mapa);
+    const campoLatitude =
+        document.getElementById("latitude");
 
-                marcador.bindPopup(
-                    "<strong>Ocorrência nº " +
-                    ocorrencia.id +
-                    "</strong><br>" +
-                    String(ocorrencia.tipo_ocorrencia || "Problema ambiental") +
-                    "<br>" +
-                    String(ocorrencia.local || "Local não informado")
-                );
+    const campoLongitude =
+        document.getElementById("longitude");
 
-                marcadores.push(marcador);
-            }
-        });
+    const campoPrecisao =
+        document.getElementById("precisao_metros");
 
-        if (marcadores.length > 0) {
-            const grupo = L.featureGroup(marcadores);
+    const campoDataCaptura =
+        document.getElementById("data_captura");
 
-            mapa.fitBounds(grupo.getBounds().pad(0.15), {
-                maxZoom: 15
-            });
+    const statusLocalizacao =
+        document.getElementById("status-localizacao");
+
+    let marcadorUsuario = null;
+
+    // Solicita a localização quando o cidadão clicar no botão.
+    botaoLocalizacao.addEventListener("click", function () {
+
+        if (!navigator.geolocation) {
+            statusLocalizacao.textContent =
+                "Este navegador não oferece suporte à localização.";
+
+            return;
         }
 
-        const botaoLocalizacao =
-            document.getElementById("botao-localizacao");
+        statusLocalizacao.textContent =
+            "Obtendo localização...";
 
-        const statusLocalizacao =
-            document.getElementById("status-localizacao");
+        navigator.geolocation.getCurrentPosition(
 
-        const dadosLocalizacao =
-            document.getElementById("dados-localizacao");
+            function (posicao) {
 
-        const campoLatitude =
-            document.getElementById("latitude-formulario");
+                const latitude = posicao.coords.latitude;
+                const longitude = posicao.coords.longitude;
 
-        const campoLongitude =
-            document.getElementById("longitude-formulario");
+                // Preenche os campos ocultos do formulário.
+                campoLatitude.value = latitude;
+                campoLongitude.value = longitude;
 
-        const campoPrecisao =
-            document.getElementById("precisao-formulario");
+                campoPrecisao.value =
+                    posicao.coords.accuracy || "";
 
-        const campoDataCaptura =
-            document.getElementById("data-captura-formulario");
+                campoDataCaptura.value =
+                    new Date().toISOString();
 
-        botaoLocalizacao.addEventListener("click", function () {
-            if (!navigator.geolocation) {
+                // Remove o marcador anterior, caso exista.
+                if (marcadorUsuario) {
+                    mapa.removeLayer(marcadorUsuario);
+                }
+
+                // Mostra a localização atual no mapa.
+                marcadorUsuario = L.marker([
+                    latitude,
+                    longitude
+                ]).addTo(mapa);
+
+                marcadorUsuario
+                    .bindPopup("Sua localização")
+                    .openPopup();
+
+                mapa.setView(
+                    [latitude, longitude],
+                    16
+                );
+
                 statusLocalizacao.textContent =
-                    "Este navegador não oferece suporte à localização.";
-                return;
+                    "Localização capturada. Ela será enviada junto com o registro.";
+            },
+
+            function () {
+
+                statusLocalizacao.textContent =
+                    "Não foi possível obter a localização. Verifique a permissão do navegador.";
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             }
 
-            statusLocalizacao.textContent =
-                "Solicitando localização ao dispositivo...";
+        );
 
-            botaoLocalizacao.disabled = true;
-
-            navigator.geolocation.getCurrentPosition(
-                function (posicao) {
-                    const coordenadas = posicao.coords;
-                    const latitude = coordenadas.latitude;
-                    const longitude = coordenadas.longitude;
-                    const precisao = coordenadas.accuracy;
-
-                    document.getElementById("latitude").textContent =
-                        latitude.toFixed(6);
-
-                    document.getElementById("longitude").textContent =
-                        longitude.toFixed(6);
-
-                    document.getElementById("precisao").textContent =
-                        Math.round(precisao) + " metros";
-
-                    campoLatitude.value = latitude;
-                    campoLongitude.value = longitude;
-                    campoPrecisao.value = precisao;
-
-                    campoDataCaptura.value =
-                        new Date(posicao.timestamp).toISOString();
-
-                    dadosLocalizacao.hidden = false;
-
-                    L.marker([latitude, longitude])
-                        .addTo(mapa)
-                        .bindPopup("Localização atual do dispositivo")
-                        .openPopup();
-
-                    mapa.setView([latitude, longitude], 15);
-
-                    statusLocalizacao.textContent =
-                        "Localização obtida. Ela será enviada com a ocorrência se você registrar o formulário.";
-
-                    botaoLocalizacao.disabled = false;
-                },
-
-                function (erro) {
-                    let mensagem;
-
-                    if (erro.code === 1) {
-                        mensagem =
-                            "Permissão negada. Autorize a localização nas configurações do navegador.";
-                    } else if (erro.code === 2) {
-                        mensagem =
-                            "Não foi possível determinar a localização do dispositivo.";
-                    } else if (erro.code === 3) {
-                        mensagem =
-                            "A localização demorou demais. Tente novamente.";
-                    } else {
-                        mensagem =
-                            "Ocorreu um erro ao obter a localização.";
-                    }
-
-                    statusLocalizacao.textContent = mensagem;
-                    botaoLocalizacao.disabled = false;
-                },
-
-                {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 0
-                }
-            );
-        });
-    </script>
+    });
+</script>
 
 </body>
 </html>
