@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Variáveis de ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Banco de dados local
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Backups
+backups/
+
+# Fotografias enviadas pelos usuários
+app/static/fotos/*
+!app/static/fotos/.gitkeep
+
+# Logs
+*.log
+
+# Editores e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
